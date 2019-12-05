@@ -32,7 +32,16 @@ type FdbServer struct {
 //
 // Please make sure to have called fdb.APIVersion() before opening a database.
 func (s FdbServer) OpenDB() (fdb.Database, error) {
-	return fdb.OpenDatabase(s.clusterFile)
+	db, err := fdb.OpenDatabase(s.clusterFile)
+	if s.context.Verbose {
+		if err != nil {
+			s.context.Logger.Logf("open datatabase error: %v\n", err)
+		} else {
+			s.context.Logger.Logf("database opened\n")
+		}
+	}
+
+	return db, err
 }
 
 // Destroy destroys the foundationdb cluster.
@@ -47,7 +56,11 @@ func Start() (*FdbServer, error) {
 
 func (ctx *TestContext) Start() (*FdbServer, error) {
 	// start new foundationdb docker container
-	runCmd := exec.Command("docker", "run", "--detach", "foundationdb/foundationdb:6.2.11")
+	runCmd := exec.Command("docker", "run", "--detach", "foundationdb/foundationdb:6.2.10")
+	if ctx.Verbose {
+		ctx.Logger.Logf("+%v\n", runCmd.String())
+	}
+
 	output, err := runCmd.CombinedOutput()
 	if err != nil {
 		ctx.Logger.Logf("docker run error: %v\n\n%v\n", err, output)
@@ -67,6 +80,10 @@ func (ctx *TestContext) Start() (*FdbServer, error) {
 
 	// initialize new database
 	initCmd := exec.Command("docker", "exec", dockerID, "fdbcli", "--exec", "configure new single ssd")
+	if ctx.Verbose {
+		ctx.Logger.Logf("+%v\n", initCmd.String())
+	}
+
 	output, err = initCmd.CombinedOutput()
 	if err != nil {
 		ctx.Logger.Logf("initialize database error: %v\r\n\r\n%v\n", err, string(output))
@@ -83,6 +100,9 @@ func (ctx *TestContext) Start() (*FdbServer, error) {
 
 	// get container ip
 	inspectCmd := exec.Command("docker", "inspect", dockerID, "-f", "{{ .NetworkSettings.Networks.bridge.IPAddress }}")
+	if ctx.Verbose {
+		ctx.Logger.Logf("+%v\n", inspectCmd.String())
+	}
 	output, err = inspectCmd.CombinedOutput()
 	if err != nil {
 		ctx.Logger.Logf("container network ip lookup failed: %v\r\n\r\n%v", err, string(output))
@@ -109,7 +129,7 @@ func (ctx *TestContext) Start() (*FdbServer, error) {
 	clusterFile.Write([]byte(cluster))
 
 	if ctx.Verbose {
-		ctx.Logger.Logf("cluster: %v\n", cluster)
+		ctx.Logger.Logf("cluster available: %v\n", cluster)
 	}
 
 	return &FdbServer{

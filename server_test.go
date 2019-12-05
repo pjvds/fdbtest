@@ -10,10 +10,10 @@ import (
 )
 
 func TestRoundtrip(t *testing.T) {
+	fdb.MustAPIVersion(610)
+
 	fdbtest.DefaultContext.Logger = fdbtest.WriterLogger{os.Stderr}
 	fdbtest.DefaultContext.Verbose = true
-
-	fdb.MustAPIVersion(620)
 
 	fdbServer := new(fdbtest.FdbServer)
 	server, err := fdbtest.Start()
