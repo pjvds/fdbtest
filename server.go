@@ -12,7 +12,18 @@ import (
 	"github.com/pkg/errors"
 )
 
+type TestContext struct {
+	Logger  Logger
+	Verbose bool
+}
+
+var DefaultContext = TestContext{
+	Logger:  &NilLogger{},
+	Verbose: false,
+}
+
 type FdbServer struct {
+	context     *TestContext
 	dockerID    string
 	clusterFile string
 }
@@ -31,36 +42,50 @@ func (s *FdbServer) Destroy() error {
 
 // Start starts a new foundationdb cluster.
 func Start() (*FdbServer, error) {
+	return DefaultContext.Start()
+}
+
+func (ctx *TestContext) Start() (*FdbServer, error) {
 	// start new foundationdb docker container
-	runCmd := exec.Command("docker", "run", "--detach", "foundationdb/foundationdb")
+	runCmd := exec.Command("docker", "run", "--detach", "foundationdb/foundationdb:6.2.11")
 	output, err := runCmd.CombinedOutput()
 	if err != nil {
+		ctx.Logger.Logf("docker run error: %v\n\n%v\n", err, output)
 		return nil, errors.Wrap(err, "docker run failed")
 	}
-
 	// get docker id from output
 	dockerID := strings.TrimSpace(string(output))
 	if len(dockerID) != 64 {
 		return nil, errors.New("invalid docker id in stdout: " + dockerID)
 	}
-
 	// trim docker id
 	dockerID = dockerID[:12]
+
+	if ctx.Verbose {
+		ctx.Logger.Logf("foundationdb container started with id %v\n", dockerID)
+	}
 
 	// initialize new database
 	initCmd := exec.Command("docker", "exec", dockerID, "fdbcli", "--exec", "configure new single ssd")
 	output, err = initCmd.CombinedOutput()
 	if err != nil {
+		ctx.Logger.Logf("initialize database error: %v\r\n\r\n%v\n", err, string(output))
 		return nil, errors.Wrap(err, "docker exec failed: "+string(output))
 	}
+
 	if !strings.Contains(string(output), "Database created") {
 		return nil, errors.New("unexpected configure database output: " + string(output))
+	}
+
+	if ctx.Verbose {
+		ctx.Logger.Logf("database initialize command succeeded: %v\n", strings.TrimSpace(string(output)))
 	}
 
 	// get container ip
 	inspectCmd := exec.Command("docker", "inspect", dockerID, "-f", "{{ .NetworkSettings.Networks.bridge.IPAddress }}")
 	output, err = inspectCmd.CombinedOutput()
 	if err != nil {
+		ctx.Logger.Logf("container network ip lookup failed: %v\r\n\r\n%v", err, string(output))
 		return nil, errors.Wrap(err, "docker exec inspect: "+string(output))
 	}
 	ipAddress := strings.TrimSpace(string(output))
@@ -83,7 +108,11 @@ func Start() (*FdbServer, error) {
 	cluster := fmt.Sprintf("docker:docker@%v:4500", string(ipAddress))
 	clusterFile.Write([]byte(cluster))
 
+	if ctx.Verbose {
+		ctx.Logger.Logf("cluster: %v\n", cluster)
+	}
+
 	return &FdbServer{
-		dockerID, clusterFile.Name(),
+		ctx, dockerID, clusterFile.Name(),
 	}, nil
 }

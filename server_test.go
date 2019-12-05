@@ -1,6 +1,7 @@
 package fdbtest_test
 
 import (
+	"os"
 	"testing"
 
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
@@ -9,6 +10,11 @@ import (
 )
 
 func TestRoundtrip(t *testing.T) {
+	fdbtest.DefaultContext.Logger = fdbtest.WriterLogger{os.Stderr}
+	fdbtest.DefaultContext.Verbose = true
+
+	fdb.MustAPIVersion(620)
+
 	fdbServer := new(fdbtest.FdbServer)
 	server, err := fdbtest.Start()
 
@@ -17,6 +23,7 @@ func TestRoundtrip(t *testing.T) {
 
 	db, err := server.OpenDB()
 	assert.Nil(t, err, "database should start")
+	assert.NotNil(t, db, "database should not be nil")
 
 	_, err = db.Transact(func(tx fdb.Transaction) (interface{}, error) {
 		tx.Set(fdb.Key("foo"), []byte("bar"))
