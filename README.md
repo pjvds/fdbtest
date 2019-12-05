@@ -2,36 +2,44 @@
 
 Package to support integration tests against FoundationDB.
 
-```
+```go
 import (
 	"testing"
 
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/pjvds/fdbtest"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestRoundtrip(t *testing.T) {
-	fdbServer := new(fdbtest.FdbServer)
-	server, err := fdbtest.Start()
+	fdb.MustAPIVersion(610)
 
-	assert.Nil(t, err, "foundationdb should start")
-	defer fdbServer.Destroy()
+	// start foundationdb node
+	node := fdbtest.MustStart()
+	defer node.Destroy()
 
-	db, err := server.OpenDB()
-	assert.Nil(t, err, "database should start")
+	// open fdb.Database
+	db := node.MustOpenDB()
 
-	_, err = db.Transact(func(tx fdb.Transaction) (interface{}, error) {
+	// set foo key to bar
+	_, err := db.Transact(func(tx fdb.Transaction) (interface{}, error) {
 		tx.Set(fdb.Key("foo"), []byte("bar"))
 		return nil, nil
 	})
-	assert.Nil(t, err, "set foo should succeed")
+	if err != nil {
+		t.Fatalf("set foo key failed: %v", err.Error())
+	}
 
+	// get foo key
 	value, err := db.Transact(func(tx fdb.Transaction) (interface{}, error) {
 		return tx.Get(fdb.Key("foo")).Get()
 	})
+	if err != nil {
+		t.Fatalf("get foo key failed: %v", err.Error())
+	}
 
-	assert.Nil(t, err, "get foo should succeed")
-	assert.Equal(t, "bar", string(value.([]byte)), "foo value should be bar")
+	// assert foo value
+	if "bar" != string(value.([]byte)) {
+		t.Fatalf("expected bar, got %v", string(value.([]byte)))
+	}
 }
 ```

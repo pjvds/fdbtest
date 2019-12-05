@@ -28,6 +28,15 @@ type FdbServer struct {
 	clusterFile string
 }
 
+func (s FdbServer) MustOpenDB() fdb.Database {
+	db, err := s.OpenDB()
+	if err != nil {
+		panic(err)
+	}
+
+	return db
+}
+
 // OpenDB returns an open database to the temporary cluster created by Start.
 //
 // Please make sure to have called fdb.APIVersion() before opening a database.
@@ -47,6 +56,15 @@ func (s FdbServer) OpenDB() (fdb.Database, error) {
 // Destroy destroys the foundationdb cluster.
 func (s *FdbServer) Destroy() error {
 	return exec.Command("docker", "rm", "--force", s.dockerID).Run()
+}
+
+// MustStart starts a new foundationdb node.
+func MustStart() *FdbServer {
+	s, err := Start()
+	if err != nil {
+		panic(err)
+	}
+	return s
 }
 
 // Start starts a new foundationdb cluster.
