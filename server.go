@@ -57,30 +57,16 @@ func Start() (*FdbServer, error) {
 func (ctx *TestContext) Start() (*FdbServer, error) {
 	// start new foundationdb docker container
 	runCmd := exec.Command("docker", "run", "--detach", "foundationdb/foundationdb:6.2.10")
-	stdout, err := runCmd.StdoutPipe()
-	if err != nil {
-		return nil, errors.Wrap(err, "stdout pipe creation failed")
-	}
-	stderr, err := runCmd.StderrPipe()
-	if err != nil {
-		return nil, errors.Wrap(err, "stderr pipe creation failed")
+	if ctx.Verbose {
+		ctx.Logger.Logf("+%v\n", runCmd.String())
 	}
 
-	if err := runCmd.Run(); err != nil {
-		if ctx.Verbose {
-			errOutput, err := ioutil.ReadAll(stderr)
-			if err != nil {
-				return nil, errors.Wrap(err, "stderr read failed")
-			}
-			ctx.Logger.Logf(string(errOutput))
-		}
-		ctx.Logger.Logf("docker run error: %v\n", err)
+	output, err := runCmd.Output()
+	if len(output) > 0 && ctx.Verbose {
+		ctx.Logger.Log(string(output))
+	}
+	if err != nil {
 		return nil, errors.Wrap(err, "docker run failed")
-	}
-
-	output, err := ioutil.ReadAll(stdout)
-	if err != nil {
-		return nil, errors.Wrap(err, "stdout read failed")
 	}
 
 	// get docker id from output
@@ -92,7 +78,7 @@ func (ctx *TestContext) Start() (*FdbServer, error) {
 	dockerID = dockerID[:12]
 
 	if ctx.Verbose {
-		ctx.Logger.Logf("foundationdb container started with id %v\n", dockerID)
+		ctx.Logger.Logf("foundationdb container started %v\n", dockerID)
 	}
 
 	// initialize new database
