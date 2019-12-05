@@ -57,15 +57,32 @@ func Start() (*FdbServer, error) {
 func (ctx *TestContext) Start() (*FdbServer, error) {
 	// start new foundationdb docker container
 	runCmd := exec.Command("docker", "run", "--detach", "foundationdb/foundationdb:6.2.10")
-	if ctx.Verbose {
-		ctx.Logger.Logf("+%v\n", runCmd.String())
+	stdout, err := runCmd.StdoutPipe()
+	if err != nil {
+		return nil, errors.Wrap(err, "stdout pipe creation failed")
+	}
+	stderr, err := runCmd.StderrPipe()
+	if err != nil {
+		return nil, errors.Wrap(err, "stderr pipe creation failed")
 	}
 
-	output, err := runCmd.CombinedOutput()
-	if err != nil {
-		ctx.Logger.Logf("docker run error: %v\n\n%v\n", err, output)
+	if err := runCmd.Run(); err != nil {
+		if ctx.Verbose {
+			errOutput, err := ioutil.ReadAll(stderr)
+			if err != nil {
+				return nil, errors.Wrap(err, "stderr read failed")
+			}
+			ctx.Logger.Logf(string(errOutput))
+		}
+		ctx.Logger.Logf("docker run error: %v\n", err)
 		return nil, errors.Wrap(err, "docker run failed")
 	}
+
+	output, err := ioutil.ReadAll(stdout)
+	if err != nil {
+		return nil, errors.Wrap(err, "stdout read failed")
+	}
+
 	// get docker id from output
 	dockerID := strings.TrimSpace(string(output))
 	if len(dockerID) != 64 {
