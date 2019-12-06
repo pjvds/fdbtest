@@ -15,6 +15,8 @@ func TestRoundtrip(t *testing.T) {
 
 	// start foundationdb node
 	node := fdbtest.MustStart()
+	
+	// destroy node at the end of this test
 	defer node.Destroy()
 
 	// open fdb.Database
