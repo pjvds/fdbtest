@@ -12,54 +12,49 @@ import (
 	"github.com/pkg/errors"
 )
 
-type TestContext struct {
+type Context struct {
 	Logger  Logger
 	Verbose bool
 }
 
-var DefaultContext = TestContext{
+var DefaultContext = Context{
 	Logger:  &NilLogger{},
 	Verbose: false,
 }
 
 type FdbServer struct {
-	context     *TestContext
+	context     *Context
 	dockerID    string
 	clusterFile string
+	DB          fdb.Database
 }
 
-func (s FdbServer) MustOpenDB() fdb.Database {
-	db, err := s.OpenDB()
+func (s FdbServer) MustClear() {
+	err := s.Clear()
 	if err != nil {
 		panic(err)
 	}
-
-	return db
 }
 
-// OpenDB returns an open database to the temporary cluster created by Start.
-//
-// Please make sure to have called fdb.APIVersion() before opening a database.
-func (s FdbServer) OpenDB() (fdb.Database, error) {
-	db, err := fdb.OpenDatabase(s.clusterFile)
-	if s.context.Verbose {
-		if err != nil {
-			s.context.Logger.Logf("open datatabase error: %v\n", err)
-		} else {
-			s.context.Logger.Logf("database opened\n")
-		}
-	}
+func (s FdbServer) Clear() error {
+	_, err := s.DB.Transact(func(tx fdb.Transaction) (interface{}, error) {
+		tx.ClearRange(fdb.KeyRange{fdb.Key([]byte{0x00}), fdb.Key([]byte{0xff})})
+		return nil, nil
+	})
 
-	return db, err
+	return err
 }
 
 // Destroy destroys the foundationdb cluster.
 func (s *FdbServer) Destroy() error {
 	return exec.Command("docker", "rm", "--force", s.dockerID).Run()
 }
+func MustStart() *FdbServer {
+	return DefaultContext.MustStart()
+}
 
 // MustStart starts a new foundationdb node.
-func MustStart() *FdbServer {
+func (c Context) MustStart() *FdbServer {
 	s, err := Start()
 	if err != nil {
 		panic(err)
@@ -72,7 +67,7 @@ func Start() (*FdbServer, error) {
 	return DefaultContext.Start()
 }
 
-func (ctx *TestContext) Start() (*FdbServer, error) {
+func (ctx *Context) Start() (*FdbServer, error) {
 	// start new foundationdb docker container
 	runCmd := exec.Command("docker", "run", "--detach", "foundationdb/foundationdb:6.2.10")
 	if ctx.Verbose {
@@ -153,7 +148,12 @@ func (ctx *TestContext) Start() (*FdbServer, error) {
 		ctx.Logger.Logf("cluster available: %v\n", cluster)
 	}
 
+	db, err := fdb.OpenDatabase(clusterFile.Name())
+	if err != nil {
+		return nil, errors.Wrap(err, "error opening database")
+	}
+
 	return &FdbServer{
-		ctx, dockerID, clusterFile.Name(),
+		ctx, dockerID, clusterFile.Name(), db,
 	}, nil
 }

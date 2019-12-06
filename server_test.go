@@ -1,6 +1,7 @@
 package fdbtest_test
 
 import (
+	"os"
 	"testing"
 
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
@@ -9,13 +10,17 @@ import (
 
 func TestRoundtrip(t *testing.T) {
 	fdb.MustAPIVersion(610)
+	context := fdbtest.Context{
+		Logger:  fdbtest.WriterLogger{os.Stdout},
+		Verbose: true,
+	}
 
 	// start foundationdb node
-	node := fdbtest.MustStart()
+	node := context.MustStart()
 	defer node.Destroy()
 
-	// open fdb.Database
-	db := node.MustOpenDB()
+	// get the database
+	db := node.DB
 
 	// set foo key to bar
 	_, err := db.Transact(func(tx fdb.Transaction) (interface{}, error) {
