@@ -47,7 +47,7 @@ func (s FdbServer) Clear() error {
 
 // Destroy destroys the foundationdb cluster.
 func (s *FdbServer) Destroy() error {
-	return exec.Command("docker", "rm", "--force", s.dockerID).Run()
+	return exec.Command("docker", "rm", "--force", "-v", s.dockerID).Run()
 }
 func MustStart() *FdbServer {
 	return DefaultContext.MustStart()
