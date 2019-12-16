@@ -1,3 +1,5 @@
+https://github.com/pjvds/fdbtest/workflows/Go/badge.svg
+
 # fdbtest
 
 Package to support integration tests against FoundationDB.
