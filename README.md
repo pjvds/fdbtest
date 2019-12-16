@@ -1,4 +1,4 @@
-https://github.com/pjvds/fdbtest/workflows/Go/badge.svg
+![](https://github.com/pjvds/fdbtest/workflows/Go/badge.svg)
 
 # fdbtest
 
