@@ -14,9 +14,11 @@ import (
 	"github.com/pjvds/fdbtest"
 )
 
-func TestRoundtrip(t *testing.T) {
+func init(){
 	fdb.MustAPIVersion(610)
+}
 
+func TestRoundtrip(t *testing.T) {
 	// start foundationdb node
 	node := fdbtest.MustStart()
 	
