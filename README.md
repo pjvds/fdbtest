@@ -4,7 +4,7 @@
 
 Package to support integration tests against FoundationDB.
 
-It provides an Go API to bootstrap an dockerized cluster with initialized database. It generates an `clusterfile` that can be used to connect the client library. There are convenient methods for bootstrapping and tearing down, or to clear the cluster between tests.
+It provides an Go API to bootstrap an dockerized cluster with initialized database. It generates an `clusterfile` that can be used to connect the client library. There are convenient methods for starting and tearing down, or to clear the cluster between tests.
 
 ```go
 import (
