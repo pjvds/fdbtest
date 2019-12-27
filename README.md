@@ -46,8 +46,8 @@ func TestRoundtrip(t *testing.T) {
 	}
 
 	// assert foo value
-	if "bar" != string(value.([]byte)) {
-		t.Fatalf("expected bar, got %v", string(value.([]byte)))
+	if expected := "bar"; string(value.([]byte)) != expected {
+		t.Fatalf("expected %v, got %v", expected, string(value.([]byte)))
 	}
 }
 ```
