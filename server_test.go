@@ -8,8 +8,18 @@ import (
 	"github.com/pjvds/fdbtest"
 )
 
-func TestRoundtrip(t *testing.T) {
+func init() {
 	fdb.MustAPIVersion(610)
+}
+
+func BenchmarkRoundtrip(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		node := fdbtest.MustStart()
+		node.Destroy()
+	}
+}
+
+func TestRoundtrip(t *testing.T) {
 	context := fdbtest.Context{
 		Logger:  fdbtest.WriterLogger{os.Stdout},
 		Verbose: true,
