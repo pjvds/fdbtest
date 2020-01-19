@@ -55,7 +55,7 @@ func MustStart() *FdbServer {
 
 // MustStart starts a new foundationdb node.
 func (c Context) MustStart() *FdbServer {
-	s, err := Start()
+	s, err := c.Start()
 	if err != nil {
 		panic(err)
 	}
