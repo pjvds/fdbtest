@@ -148,6 +148,15 @@ func (ctx *Context) Start() (*FdbServer, error) {
 		ctx.Logger.Logf("cluster available: %v\n", cluster)
 	}
 
+	version, err := fdb.GetAPIVersion()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get foundationdb API version")
+	}
+
+	if ctx.Verbose {
+		ctx.Logger.Logf("foundationdb client api version: %v", version)
+	}
+
 	db, err := fdb.OpenDatabase(clusterFile.Name())
 	if err != nil {
 		return nil, errors.Wrap(err, "error opening database")
