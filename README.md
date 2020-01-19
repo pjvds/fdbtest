@@ -15,7 +15,7 @@ import (
 )
 
 func init(){
-	fdb.MustAPIVersion(610)
+	fdb.MustAPIVersion(620)
 }
 
 func TestRoundtrip(t *testing.T) {
