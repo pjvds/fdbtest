@@ -154,7 +154,7 @@ func (ctx *Context) Start() (*FdbServer, error) {
 	}
 
 	if ctx.Verbose {
-		ctx.Logger.Logf("foundationdb client api version: %v", version)
+		ctx.Logger.Logf("foundationdb client api version: %v\n", version)
 	}
 
 	db, err := fdb.OpenDatabase(clusterFile.Name())
