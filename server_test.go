@@ -9,7 +9,7 @@ import (
 )
 
 func init() {
-	fdb.MustAPIVersion(610)
+	fdb.MustAPIVersion(620)
 }
 
 func BenchmarkRoundtrip(b *testing.B) {

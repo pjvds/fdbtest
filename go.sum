@@ -3,6 +3,8 @@ github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAE
 github.com/apple/foundationdb v0.0.0-20191203183333-2184f59875cc h1:vnHb8SWqgwVwqMa6YKisjXuoef3X/4LDSWnN9hsZLtM=
 github.com/apple/foundationdb/bindings/go v0.0.0-20191203183333-2184f59875cc h1:BvghlPSgCkIs+oophFAkpYXt1YWaxn7RGKFslHGm6nc=
 github.com/apple/foundationdb/bindings/go v0.0.0-20191203183333-2184f59875cc/go.mod h1:OMVSB21p9+xQUIqlGizHPZfjK+SHws1ht+ZytVDoz9U=
+github.com/apple/foundationdb/bindings/go v0.0.0-20200117081441-d5a5623bd3dc h1:qrkyypN51YOIXrCRFX0TFZvMVCOYQeZE6eFiR//lvUw=
+github.com/apple/foundationdb/bindings/go v0.0.0-20200117081441-d5a5623bd3dc/go.mod h1:OMVSB21p9+xQUIqlGizHPZfjK+SHws1ht+ZytVDoz9U=
 github.com/cespare/xxhash v1.1.0 h1:a6HrQnmkObjyL+Gs60czilIUGqrzKutQD6XZog3p+ko=
 github.com/cespare/xxhash v1.1.0/go.mod h1:XrSqR1VqqWfGrhpAt58auRo0WTKS1nRRg3ghfAqPWnc=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
