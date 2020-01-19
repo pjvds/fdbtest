@@ -21,7 +21,7 @@ func BenchmarkRoundtrip(b *testing.B) {
 
 func TestRoundtrip(t *testing.T) {
 	context := fdbtest.Context{
-		Logger:  fdbtest.WriterLogger{os.Stdout},
+		Logger:  fdbtest.WriterLogger{os.Stderr},
 		Verbose: true,
 	}
 
