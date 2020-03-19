@@ -44,6 +44,8 @@ func TestRoundtrip(t *testing.T) {
 	value, err := db.Transact(func(tx fdb.Transaction) (interface{}, error) {
 		return tx.Get(fdb.Key("foo")).Get()
 	})
+
+	// assert result
 	assert.NoError(t, err)
 	assert.Equal(t, []byte("bar"), value)
 }
