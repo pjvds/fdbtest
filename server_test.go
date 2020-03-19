@@ -6,6 +6,7 @@ import (
 
 	"github.com/apple/foundationdb/bindings/go/src/fdb"
 	"github.com/pjvds/fdbtest"
+	"github.com/stretchr/testify/assert"
 )
 
 func init() {
@@ -37,20 +38,12 @@ func TestRoundtrip(t *testing.T) {
 		tx.Set(fdb.Key("foo"), []byte("bar"))
 		return nil, nil
 	})
-	if err != nil {
-		t.Fatalf("set foo key failed: %v", err.Error())
-	}
+	assert.NoError(t, err)
 
 	// get foo key
 	value, err := db.Transact(func(tx fdb.Transaction) (interface{}, error) {
 		return tx.Get(fdb.Key("foo")).Get()
 	})
-	if err != nil {
-		t.Fatalf("get foo key failed: %v", err.Error())
-	}
-
-	// assert foo value
-	if "bar" != string(value.([]byte)) {
-		t.Fatalf("expected bar, got %v", string(value.([]byte)))
-	}
+	assert.NoError(t, err)
+	assert.Equal(t, []byte("bar"), value)
 }
